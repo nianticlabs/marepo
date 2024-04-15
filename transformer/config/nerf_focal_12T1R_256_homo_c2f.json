@@ -1,0 +1,15 @@
+{
+  "setting": "nerf P.E. + Pixel Position P.E. normalized by focal. Configs for training marepo model",
+  "pre_pos_encoding":"nerf",
+  "pre_feature_pose_encoding":"None",
+  "pixel_pos_encoding":"focal_norm",
+  "d_model": 256,
+  "nhead": 8,
+  "attention": "linear",
+  "layer_names": ["self","self","self","self","self","self","self","self","self","self","self","self"],
+  "//comment1":  "the transformer_pose_mean is mean_cam_center pose of entire mapping dataset",
+  "//comment2":  "compute after dataset is load: self.train_dl.dataset.mean_cam_center",
+  "num_resconv_block": 1,
+  "use_homogeneous_pose_t": "True",
+  "c2f": "V0"
+}
