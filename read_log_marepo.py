@@ -4,8 +4,8 @@
 import argparse
 import logging
 import os.path as osp
-from distutils.util import strtobool
 import sys
+from distutils.util import strtobool
 
 Wayspots=['wayspots_bears', 'wayspots_cubes', 'wayspots_inscription', 'wayspots_lawn', 'wayspots_map',
           'wayspots_squarebench', 'wayspots_statue', 'wayspots_tendrils', 'wayspots_therock', 'wayspots_wintersign']
@@ -36,7 +36,7 @@ def parse_line_from_file(log_file, pct_dict):
     with open(log_file, 'r') as file:
 
         # read last n=10 lines, start from e.g. INFO:__main__:  5m/10deg: 97.22%
-        Lines = file.readlines()[-n:-3]
+        Lines = file.readlines()[-n:]
 
         # start
         for i in range(n-3):
@@ -64,6 +64,21 @@ def parse_line_from_file(log_file, pct_dict):
                 
             if this_line_0_rear == '1cm/1deg:':
                 pct_dict['pct1'] += p2f(this_line[1])
+        
+        # Split the median and mean error lines.
+        def extract_r_t(line):
+            # Line looks like: "INFO:__main__:Median Error: 0.00 deg, 0.00 cm"
+            r, t = line.split(":")[-1].strip().split(",")
+            return float(r.strip().split(" ")[0]), float(t.strip().split(" ")[0])
+
+        # Extract median.
+        median_r, median_t = extract_r_t(Lines[-3])
+        pct_dict['median_r'] += median_r
+        pct_dict['median_t'] += median_t
+
+        mean_r, mean_t = extract_r_t(Lines[-2])
+        pct_dict['mean_r'] += mean_r
+        pct_dict['mean_t'] += mean_t
 
     return pct_dict
 
@@ -113,7 +128,11 @@ if __name__ == '__main__':
                 'pct10_5': 0,
                 'pct5': 0,
                 'pct2': 0,
-                'pct1': 0
+                'pct1': 0,
+                'median_r': 0,
+                'median_t': 0,
+                'mean_r': 0,
+                'mean_t': 0,
             }
             for scene in scene_dict:
                 log_file=osp.join(args.model_path, 'log_Marepo_'+scene+'_noise_ratio_'+str(noise_ratio)+'_noise_level_'+str(args.noise_level)+'m.txt')
@@ -128,6 +147,8 @@ if __name__ == '__main__':
             print(f"5cm/5deg: {pct_dict['pct5'] * 100 / len(scene_dict):.2f}%")
             print(f"2cm/2deg: {pct_dict['pct2'] * 100 / len(scene_dict):.2f}%")
             print(f"1cm/1deg: {pct_dict['pct1'] * 100 / len(scene_dict):.2f}%")
+            print(f"Avg. Median Error: {pct_dict['median_r']/len(scene_dict):.2f} deg, {pct_dict['median_t']/len(scene_dict):.2f} cm")
+            print(f"Avg. Mean Error: {pct_dict['mean_r']/len(scene_dict):.2f} deg, {pct_dict['mean_t']/len(scene_dict):.2f} cm")
 
         sys.exit()
 
@@ -138,7 +159,11 @@ if __name__ == '__main__':
         'pct10_5': 0,
         'pct5': 0,
         'pct2': 0,
-        'pct1': 0
+        'pct1': 0,
+        'median_r': 0,
+        'median_t': 0,
+        'mean_r': 0,
+        'mean_t': 0,
     }
     for scene in scene_dict:
 
@@ -153,7 +178,7 @@ if __name__ == '__main__':
         print(log_file)
         pct_dict = parse_line_from_file(log_file, pct_dict)
     # breakpoint()
-    print(f"{args.dataset} {args.datatype} dataset mean accuracy")
+    print(f"{args.dataset} {args.datatype} dataset mean accuracy:")
     print(f"5m/10deg: {pct_dict['pct500_10']*100/len(scene_dict):.2f}%" )
     print(f"0.5m/5deg: {pct_dict['pct50_5'] * 100 / len(scene_dict):.2f}%")
     print(f"0.25m/2deg: {pct_dict['pct25_2'] * 100 / len(scene_dict):.2f}%")
@@ -161,4 +186,6 @@ if __name__ == '__main__':
     print(f"5cm/5deg: {pct_dict['pct5'] * 100 / len(scene_dict):.2f}%")
     print(f"2cm/2deg: {pct_dict['pct2'] * 100 / len(scene_dict):.2f}%")
     print(f"1cm/1deg: {pct_dict['pct1'] * 100 / len(scene_dict):.2f}%")
+    print(f"Avg. Median Error: {pct_dict['median_r']/len(scene_dict):.2f} deg, {pct_dict['median_t']/len(scene_dict):.2f} cm")
+    print(f"Avg. Mean Error: {pct_dict['mean_r']/len(scene_dict):.2f} deg, {pct_dict['mean_t']/len(scene_dict):.2f} cm")
 

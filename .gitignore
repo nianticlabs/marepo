@@ -11,3 +11,6 @@ datasets/visloc_pseudo_gt_limitations
 
 # Outputs.
 output/
+
+# Logs.
+logs/
