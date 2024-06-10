@@ -96,7 +96,7 @@ Having done the steps above, you are ready to experiment with **_marepo_**!
 The pose estimation for a testing scene can be performed using the `test_[dataset].sh` scripts.
 
 ```shell
-cd scripts_paper
+cd scripts
 # test wayspots
 sh test_wayspots.sh
 # test 7scenes

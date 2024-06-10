@@ -245,3 +245,37 @@ class PositionEncodingSine(nn.Module):
             plt.close()
 
         print("visualized pe to tmp/pe")
+
+    def plot_pixel_pe_with_diff_intrinsics(self, N, intrinsic, folder, index):
+        '''
+        N: batch size
+        intrinsic: [B,3,3]
+
+        '''
+        # visualize pixel_pe with customized focal length
+        for focal in range(450, 600, 1):
+            intrinsic[:,1,1] = focal
+            intrinsic[:,0,0] = focal
+
+            pe = self.dynamic_pixel_pe_focal_norm(N, intrinsic)
+
+            if torch.is_tensor(pe):
+                pe = pe.cpu().detach().numpy()
+
+            if pe.ndim==4:
+                pe = pe[0] # choose 0th frame to visualize
+
+            if not osp.exists(f'tmp/{folder}'):
+                # If it doesn't exist, create it
+                os.makedirs(f'tmp/{folder}')
+
+            fig = plt.figure(figsize=(15, 4))
+            cax = plt.matshow(pe[index, :, :])
+            plt.gcf().colorbar(cax)
+            plt.savefig(f'tmp/{folder}/pe{index:01d}_f{focal:03d}.png')
+            plt.close()
+
+            
+
+
+

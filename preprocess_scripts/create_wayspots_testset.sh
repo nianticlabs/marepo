@@ -23,32 +23,31 @@ do
   ln -s "${new_dir}/${scene}/train/${scene}" "${new_dir}/${scene}/test" # Note: this could be softlinks to save disk space
 done
 
-############## Use Softlinks to generate flip + no flip combined ace head logs
-new_ace_head_dir="${UPPER_REPO_PATH}/marepo/logs/wayspots_pretrain"
-mkdir ${new_ace_head_dir}
+############## Use Softlinks to generate ace head logs
+# new_ace_head_dir="${UPPER_REPO_PATH}/marepo/logs/wayspots_pretrain"
+# mkdir ${new_ace_head_dir}
 
-no_flip_dir="${UPPER_REPO_PATH}/marepo/logs/wayspots"
+# no_flip_dir="${UPPER_REPO_PATH}/marepo/logs/wayspots"
 
-mkdir "${new_ace_head_dir}/train"
-mkdir "${new_ace_head_dir}/val"
-mkdir "${new_ace_head_dir}/test"
+# mkdir "${new_ace_head_dir}/train"
+# mkdir "${new_ace_head_dir}/val"
+# mkdir "${new_ace_head_dir}/test"
 
-ln -s "${no_flip_dir}"/* "${new_ace_head_dir}/train"
-ln -s "${no_flip_dir}"/* "${new_ace_head_dir}/val"
-ln -s "${no_flip_dir}"/* "${new_ace_head_dir}/test"
+# ln -s "${no_flip_dir}"/* "${new_ace_head_dir}/train"
+# ln -s "${no_flip_dir}"/* "${new_ace_head_dir}/val"
+# ln -s "${no_flip_dir}"/* "${new_ace_head_dir}/test"
 
 ## We first run sh create_wayspots_testset.sh. Then run this part.
 # Notice the ace_head_dummy.pt is a dummy ACE head checkpoint for constructing the ACE Network.
 # In preprocessing, we will actually dynamically load the correct ACE heads on-the-fly.
 
-testset_dir="${UPPER_REPO_PATH}/wayspots_finetune_dataset"
 head_network_path="${UPPER_REPO_PATH}/marepo/logs/wayspots_pretrain"
 
-for scene_data in "$testset_dir"/*
+for scene_data in "$new_dir"/*
 do
   echo "${scene_data##*/}"
-  CUDA_VISIBLE_DEVICES=5 python ../preprocess_marepo.py \
-  --dataset_path "${testset_dir}/${scene_data##*/}" \
+  CUDA_VISIBLE_DEVICES=0 python ../preprocess_marepo.py \
+  --dataset_path "${new_dir}/${scene_data##*/}" \
   --dataset_head_network_path ${head_network_path} \
   --head_network_path ../ace_head_dummy.pt \
   --use_half=False \
@@ -58,8 +57,8 @@ do
   --scheme2 True \
   --scheme2_aug_train_only True
 
-  CUDA_VISIBLE_DEVICES=5 python ../preprocess_marepo.py \
-  --dataset_path "${testset_dir}/${scene_data##*/}" \
+  CUDA_VISIBLE_DEVICES=0 python ../preprocess_marepo.py \
+  --dataset_path "${new_dir}/${scene_data##*/}" \
   --dataset_head_network_path ${head_network_path} \
   --head_network_path ../ace_head_dummy.pt \
   --use_half=False \
@@ -68,5 +67,4 @@ do
   --testskip 1 \
   --scheme3 True \
   --scheme3_aug_train_only True
-
 done

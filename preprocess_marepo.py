@@ -320,9 +320,8 @@ class TrainerACE():
                     if DEBUG:
                         print("target size: ", target_H, target_W, "aug data size: ", aug_H, aug_W)
                         print("intrinsics_B33[0]", intrinsics_B33[0])
-
-                    # un-normalize image for backup reasons
-                    unnorm_image = unnorm(image_B1HW)  # this is grey scale [1,1,480,640]
+                    # un-normalize image for backup reasons. Values are in [0,1.]
+                    unnorm_image = unnorm(copy.deepcopy(image_B1HW))  # this is grey scale [1,1,480,640]
 
                     # debug: save image before random_crop
                     if DEBUG:
@@ -334,11 +333,12 @@ class TrainerACE():
 
                     # This is to handle customized random_crop and shifts principle point,
                     random_crop = Custom_RandomCrop((target_H, target_W), (aug_H, aug_W), intrinsics_B33[0])
-                    image = random_crop(unnorm_image)
+                    image_B1HW_random_crop = random_crop(image_B1HW) # this is the image to send to the ACE regressor
+                    unorm_image_random_crop = unnorm(copy.deepcopy(image_B1HW_random_crop)) # this is the unormalized and cropped image to be saved to file
 
                     # debug: save image after random_crop
                     if DEBUG:
-                        tmp = copy.deepcopy(image)
+                        tmp = copy.deepcopy(unorm_image_random_crop)
                         tmp[:, :, int(random_crop.intrinsics[1, 2]):int(random_crop.intrinsics[1, 2]) + 1,
                         int(random_crop.intrinsics[0, 2]):int(random_crop.intrinsics[0, 2]) + 1] = 1.0
                         save_image(tmp, f'tmp/{batch_idx:03d}_after_crop.png')
@@ -346,9 +346,8 @@ class TrainerACE():
 
                     # record intrinsics
                     new_intrinsics = random_crop.intrinsics  # get updated intrinsics
-
                     # compute scene coordinates
-                    scene_coordinates_B3HW = self.regressor(image.to(self.device))
+                    scene_coordinates_B3HW = self.regressor(image_B1HW_random_crop.to(self.device)) # mod0 fix, make sure the input image is normalized like ACE
 
                 else:
                     # compute scene coordinates
@@ -382,7 +381,7 @@ class TrainerACE():
                         breakpoint()
                     # end debug
 
-                    self.save_aug_img_n_sc_n_pose_to_file(image, sc_mask, sc_to_save, gt_pose_to_save, new_intrinsics, fname, group_num)
+                    self.save_aug_img_n_sc_n_pose_to_file(unorm_image_random_crop, sc_mask, sc_to_save, gt_pose_to_save, new_intrinsics, fname, group_num)
                 else:
                     scene_coordinates_B3HW = scene_coordinates_B3HW.float().cpu().numpy()
                     self.save_sc_to_file(scene_coordinates_B3HW, fname)
@@ -428,6 +427,7 @@ class TrainerACE():
 
         prev_scene_dir = self.options.support_set_path + '/' + prev_scene_dir + '/train/scene_bound/'
         return pre_ckpt, cur_ckpt, prev_scene_dir, max_scene_pose_bounds
+
     def generate_pose_bound_support_dataset(self, split="train"):
         '''
         here we only compute pose bound based on the mapping sequence, not query sequence?

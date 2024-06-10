@@ -60,7 +60,6 @@ do
   fi
 done
 
-
 #########################################
 # generate augmented data for the 7Scene mapping sequences,
 # The augmentation helps 7Scenes adaptation for ACEFormer and generates necessary files like in mapfree training
@@ -76,7 +75,7 @@ for scene_data in "$testset_dir"/*
 do
   echo "${scene_data##*/}"
   # perform scheme2 data augmentation for 7Scenes
-  CUDA_VISIBLE_DEVICES=7 python ../preprocess_marepo.py \
+  CUDA_VISIBLE_DEVICES=0 python ../preprocess_marepo.py \
   --dataset_path "${testset_dir}/${scene_data##*/}" \
   --dataset_head_network_path ${head_network_path} \
   --head_network_path ../ace_head_dummy.pt \
@@ -89,7 +88,7 @@ do
   --not_mapfree True
 
   # perform scheme3 data augmentation for 7Scenes
-  CUDA_VISIBLE_DEVICES=7 python ../preprocess_marepo.py \
+  CUDA_VISIBLE_DEVICES=0 python ../preprocess_marepo.py \
   --dataset_path "${testset_dir}/${scene_data##*/}" \
   --dataset_head_network_path ${head_network_path} \
   --head_network_path ../ace_head_dummy.pt \
@@ -103,7 +102,7 @@ do
   --not_mapfree True
 
   # perform scheme3 data augmentation for 7Scenes
-  CUDA_VISIBLE_DEVICES=7 python ../preprocess_marepo.py \
+  CUDA_VISIBLE_DEVICES=0 python ../preprocess_marepo.py \
   --dataset_path "${testset_dir}/${scene_data##*/}" \
   --dataset_head_network_path ${head_network_path} \
   --head_network_path ../ace_head_dummy.pt \
@@ -117,7 +116,7 @@ do
   --not_mapfree True
 
 #  # perform scheme3 data augmentation for 7Scenes
-  CUDA_VISIBLE_DEVICES=7 python ../preprocess_marepo.py \
+  CUDA_VISIBLE_DEVICES=0 python ../preprocess_marepo.py \
   --dataset_path "${testset_dir}/${scene_data##*/}" \
   --dataset_head_network_path ${head_network_path} \
   --head_network_path ../ace_head_dummy.pt \
@@ -131,7 +130,7 @@ do
   --not_mapfree True
 
   # perform scheme3 data augmentation for 7Scenes
-  CUDA_VISIBLE_DEVICES=7 python ../preprocess_marepo.py \
+  CUDA_VISIBLE_DEVICES=0 python ../preprocess_marepo.py \
   --dataset_path "${testset_dir}/${scene_data##*/}" \
   --dataset_head_network_path ${head_network_path} \
   --head_network_path ../ace_head_dummy.pt \
