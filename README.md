@@ -150,7 +150,6 @@ Those are the scenes that we use to train the **_marepo_** model.
 
 #### Build the Map-Free training set for **_marepo_**
 
-
 **Data splits**: As described in the paper:
 - In our developement phase, we use seq. 0-199 and seq. 210-409 as the training set, and seq. 410-459 as the validation set. 
 - For our final paper model, we use seq. 0-199 and seq. 210-459 to train the final model after fixing all hyperparameters.
@@ -229,7 +228,7 @@ To do so, we will use the scripts in the `preprocess_scripts/` folder and `prepr
 ```shell
 cd ../preprocess_scripts
 sh create_mapfree_all_dataset.sh
-````
+```
 
 **If you made it this far, congratulations!** You have successfully prepared the training data for **_marepo_** pose regressor.
 
@@ -255,7 +254,7 @@ sh create_7scenes_finetune_dataset.sh
 cd ../scripts
 sh train_marepo_s_wayspots.sh
 sh train_marepo_s_7scenes.sh
-````
+```
 
 ## Publications
 

@@ -7,9 +7,9 @@ model_name="marepo" # Paper Model
 out_dir="${REPO_PATH}/logs/${model_name}"
 # mkdir "${out_dir}"
 
-############ example to finetuned marepo_s ###############
-# TRAIN ###
-############################## training the marepo finetune ace head on test set
+########### example to finetuned marepo_s ###############
+### TRAIN ###
+############################# training the marepo finetune ace head on test set
 testset_dir=$(realpath -s "${REPO_PATH}/../wayspots_finetune_dataset")
 head_network_path="${REPO_PATH}/logs/wayspots_pretrain"
 for scene_data in "$testset_dir"/*
