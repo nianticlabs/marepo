@@ -283,13 +283,6 @@ class Transformer_Head(nn.Module):
             h_slice.clamp_(max=self.min_inv_scale)
             out_t = out_t[:, :3] / h_slice
 
-        # random_rescale_sc exp for randomly shift sc values
-        if translation_sc_shift_offset != None:
-            out_t = out_t - translation_sc_shift_offset
-        # random_rescale_sc exp for randomly scale sc values
-        if scale_factor != None:
-            out_t = out_t/scale_factor
-
         # add mapping mean back
         # DO Not remove, used in testing, precision is fp32 from this point
         out_t = out_t.float() + self.transformer_pose_mean.clone().detach().view(3)
@@ -370,12 +363,6 @@ class Transformer_Head(nn.Module):
         # subtract mapping mean
         sc_coords = sc - self.transformer_pose_mean # DO Not remove, used in testing
 
-        if random_rescale_sc:
-            sc_coords, scale_factor, translation_sc_shift_offset = self.runtime_augmentation(sc_coords, B, C, random_rescale_sc)
-        else:
-            scale_factor = torch.ones((B, 1), device=sc_coords.device)
-            translation_sc_shift_offset = torch.zeros((B, C), device=sc_coords.device)
-
         # SC map positional encoding
         sc_feat, pixel_pe = self.pos_encoding(sc_coords, intrinsics_B33)
         feat = rearrange(sc_feat, 'n c h w -> n (h w) c') # [32, 4800, 128]
@@ -390,13 +377,13 @@ class Transformer_Head(nn.Module):
             feat_list = self.transformer(feat, None, mask_c0, None)
             pose_list = []
             for block_idx, feat in enumerate(feat_list):
-                out_t, out_r = self.pose_regression_head(feat, [B, C, H, W], scale_factor, translation_sc_shift_offset)
+                out_t, out_r = self.pose_regression_head(feat, [B, C, H, W])
                 pose = self.convert_pose_to_4x4(B, out_r, out_t, sc_coords.device)
                 pose_list.append(pose)
             return pose_list
         else:
             feat = self.transformer(feat, None, mask_c0, None) # [N, HW, C] [64, 4800, 128]
-        out_t, out_r = self.pose_regression_head(feat, [B,C,H,W], scale_factor, translation_sc_shift_offset)
+        out_t, out_r = self.pose_regression_head(feat, [B,C,H,W])
 
         # convert rotation to SO(3), precision is fp32 from this point
         pose = self.convert_pose_to_4x4(B, out_r, out_t, sc_coords.device)

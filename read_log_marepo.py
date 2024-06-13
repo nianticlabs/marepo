@@ -21,7 +21,7 @@ Twelve_Scenes=["12scenes_apt1_kitchen", "12scenes_apt1_living", "12scenes_apt2_b
 
 Twelve_Scenes_Pgt=["pgt_12scenes_apt1_kitchen", "pgt_12scenes_apt1_living", "pgt_12scenes_apt2_bed", "pgt_12scenes_apt2_kitchen", "pgt_12scenes_apt2_living", "pgt_12scenes_apt2_luke", "pgt_12scenes_office1_gates362", "pgt_12scenes_office1_gates381", "pgt_12scenes_office1_lounge", "pgt_12scenes_office1_manolis", "pgt_12scenes_office2_5a", "pgt_12scenes_office2_5b"]
 
-Noise_Ratio=[0.,0.2,0.4,0.6,0.8,1.0]
+
 _logger = logging.getLogger(__name__)
 
 def _strtobool(x):
@@ -93,12 +93,6 @@ if __name__ == '__main__':
     parser.add_argument('datatype', type=str, help='choices: train, val, test')
     parser.add_argument('--finetune', type=_strtobool, default=False,
                         help='finetuned model using pretrained marepo')
-    parser.add_argument('--ACE', type=_strtobool, default=False,
-                        help='test ACE')
-    parser.add_argument('--inlier_threshold', type=int, default=0,
-                        help='inlier_threshold setting')
-    parser.add_argument('--noise_level', type=float, default=0,
-                        help='for adding noise to sc map experiment')
     args = parser.parse_args()
 
     if args.dataset=='Wayspots' and args.datatype=='test':
@@ -116,39 +110,6 @@ if __name__ == '__main__':
     else:
         print("unrecognized dataset, please check")
         NotImplementedError
-    #
-
-
-    if args.noise_level>0:
-        for noise_ratio in Noise_Ratio:
-            pct_dict = {
-                'pct500_10': 0,
-                'pct50_5': 0,
-                'pct25_2': 0,
-                'pct10_5': 0,
-                'pct5': 0,
-                'pct2': 0,
-                'pct1': 0,
-                'median_r': 0,
-                'median_t': 0,
-                'mean_r': 0,
-                'mean_t': 0,
-            }
-            for scene in scene_dict:
-                log_file=osp.join(args.model_path, 'log_Marepo_'+scene+'_noise_ratio_'+str(noise_ratio)+'_noise_level_'+str(args.noise_level)+'m.txt')
-                print(log_file)
-                pct_dict = parse_line_from_file(log_file, pct_dict)
-
-            print(f"noise_ratio: {noise_ratio}")
-            print(f"5m/10deg: {pct_dict['pct500_10'] * 100 / len(scene_dict):.2f}%")
-            print(f"0.5m/5deg: {pct_dict['pct50_5'] * 100 / len(scene_dict):.2f}%")
-            print(f"0.25m/2deg: {pct_dict['pct25_2'] * 100 / len(scene_dict):.2f}%")
-            print(f"10cm/5deg: {pct_dict['pct10_5'] * 100 / len(scene_dict):.2f}%")
-            print(f"5cm/5deg: {pct_dict['pct5'] * 100 / len(scene_dict):.2f}%")
-            print(f"2cm/2deg: {pct_dict['pct2'] * 100 / len(scene_dict):.2f}%")
-            print(f"1cm/1deg: {pct_dict['pct1'] * 100 / len(scene_dict):.2f}%")
-            print(f"Avg. Median Error: {pct_dict['median_r']/len(scene_dict):.2f} deg, {pct_dict['median_t']/len(scene_dict):.2f} cm")
-            print(f"Avg. Mean Error: {pct_dict['mean_r']/len(scene_dict):.2f} deg, {pct_dict['mean_t']/len(scene_dict):.2f} cm")
 
         sys.exit()
 
@@ -169,10 +130,6 @@ if __name__ == '__main__':
 
         if args.finetune:
             log_file = osp.join(args.model_path, 'log_Finetune_Marepo_' + scene + '_' + args.datatype + '.txt')
-        elif args.inlier_threshold > 0: # fuse ace (>=inlier) + marepo (< inlier) results
-            log_file = osp.join(args.model_path, 'log_Finetune_Marepo_' + scene + '_' + args.datatype + '_inlier_' + str(args.inlier_threshold) + '.txt')
-        elif args.ACE:
-            log_file = osp.join(args.model_path, 'log_ACE_' + scene + '_' + args.datatype + '.txt')
         else:
             log_file=osp.join(args.model_path, 'log_Marepo_'+scene+'_'+args.datatype+'.txt')
         print(log_file)
